@@ -14,7 +14,8 @@ Manage Google Apps Script projects, versions and deployments.
 terraform {
   required_providers {
     googleappsscript = {
-      source = "fnkr/googleappsscript"
+      source  = "fnkr/googleappsscript"
+      version = "~> 0.1"
     }
   }
 }

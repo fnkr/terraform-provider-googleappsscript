@@ -3,6 +3,17 @@
 Manage [Google Apps Script](https://developers.google.com/apps-script) projects, versions and deployments with Terraform.
 
 ```hcl
+terraform {
+  required_providers {
+    googleappsscript = {
+      source  = "fnkr/googleappsscript"
+      version = "~> 0.1"
+    }
+  }
+}
+
+provider "googleappsscript" {}
+
 resource "googleappsscript_project" "example" {
   title = "Example"
   files = {
