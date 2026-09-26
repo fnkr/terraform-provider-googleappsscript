@@ -57,7 +57,7 @@ make generate  # regenerate docs
 
 To use a local build, add a [dev override](https://developer.hashicorp.com/terraform/cli/config/config-file#development-overrides-for-provider-developers) for `fnkr/googleappsscript` pointing at your `GOBIN`.
 
-`make testacc` uses Application Default Credentials, `GOOGLE_CREDENTIALS` or `GOOGLE_OAUTH_ACCESS_TOKEN`; see the [provider docs](docs/index.md#authentication) for setup.
+`make testacc` uses Application Default Credentials, `GOOGLEAPPSSCRIPT_CREDENTIALS` or `GOOGLEAPPSSCRIPT_ACCESS_TOKEN`; see the [provider docs](docs/index.md#authentication) for setup.
 
 Releases are built and signed by GoReleaser when a `v*` tag is pushed; the Terraform Registry picks up the GitHub release.
 

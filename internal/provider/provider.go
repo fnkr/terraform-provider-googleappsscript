@@ -27,6 +27,14 @@ var scopes = []string{
 	drive.DriveScope,
 }
 
+// Environment variables for credentials. They are provider-specific so they
+// don't collide with the GOOGLE_* variables the google provider reads when
+// both are used in the same configuration.
+const (
+	envCredentials = "GOOGLEAPPSSCRIPT_CREDENTIALS"
+	envAccessToken = "GOOGLEAPPSSCRIPT_ACCESS_TOKEN"
+)
+
 type client struct {
 	script *script.Service
 	drive  *drive.Service
@@ -73,13 +81,13 @@ func (p *googleAppsScriptProvider) Schema(_ context.Context, _ provider.SchemaRe
 		Attributes: map[string]schema.Attribute{
 			"credentials": schema.StringAttribute{
 				Description: "Path to or contents of an `authorized_user` credentials JSON file. " +
-					"Can also be set with `GOOGLE_CREDENTIALS`. Defaults to Application Default Credentials.",
+					"Can also be set with `" + envCredentials + "`. Defaults to Application Default Credentials.",
 				Optional:  true,
 				Sensitive: true,
 			},
 			"access_token": schema.StringAttribute{
 				Description: "OAuth 2.0 access token. Takes precedence over `credentials`. " +
-					"Can also be set with `GOOGLE_OAUTH_ACCESS_TOKEN`.",
+					"Can also be set with `" + envAccessToken + "`.",
 				Optional:  true,
 				Sensitive: true,
 			},
@@ -100,8 +108,8 @@ func (p *googleAppsScriptProvider) Configure(ctx context.Context, req provider.C
 	if p.httpClient == nil {
 		var err error
 		auth, err = clientOption(ctx,
-			valueOrEnv(cfg.AccessToken, "GOOGLE_OAUTH_ACCESS_TOKEN"),
-			valueOrEnv(cfg.Credentials, "GOOGLE_CREDENTIALS"),
+			valueOrEnv(cfg.AccessToken, envAccessToken),
+			valueOrEnv(cfg.Credentials, envCredentials),
 		)
 		if err != nil {
 			resp.Diagnostics.AddError("Invalid credentials", err.Error())

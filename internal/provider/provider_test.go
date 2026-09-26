@@ -15,7 +15,7 @@ import (
 )
 
 // runTest runs tc against an in-memory fake API, or against the real API
-// (using GOOGLE_CREDENTIALS, GOOGLE_OAUTH_ACCESS_TOKEN or ADC) if TF_ACC is set.
+// (using the same credentials as the provider) if TF_ACC is set.
 func runTest(t *testing.T, tc resource.TestCase) {
 	t.Helper()
 	ctx := context.Background()
@@ -32,7 +32,7 @@ func runTest(t *testing.T, tc resource.TestCase) {
 		t.Cleanup(func() { pollInterval = prev })
 	} else {
 		var err error
-		if auth, err = clientOption(ctx, os.Getenv("GOOGLE_OAUTH_ACCESS_TOKEN"), os.Getenv("GOOGLE_CREDENTIALS")); err != nil {
+		if auth, err = clientOption(ctx, os.Getenv(envAccessToken), os.Getenv(envCredentials)); err != nil {
 			t.Fatal(err)
 		}
 	}
