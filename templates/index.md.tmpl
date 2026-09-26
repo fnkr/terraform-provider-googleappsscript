@@ -1,0 +1,31 @@
+---
+page_title: "Provider: Google Apps Script"
+description: |-
+  {{ .Description }}
+---
+
+# Google Apps Script Provider
+
+{{ .Description }}
+
+## Example Usage
+
+{{ tffile "examples/provider/provider.tf" }}
+
+## Authentication
+
+The Apps Script API does not support service accounts, so the provider needs user credentials:
+
+1. Turn on the Apps Script API in your [user settings](https://script.google.com/home/usersettings).
+2. In a Google Cloud project, enable the **Apps Script API** and **Google Drive API**, and create an OAuth client ID of type *Desktop app*.
+3. Log in with that client:
+
+   ```sh
+   gcloud auth application-default login \
+     --client-id-file=client_secret.json \
+     --scopes=https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/script.projects,https://www.googleapis.com/auth/script.deployments,https://www.googleapis.com/auth/drive
+   ```
+
+The resulting Application Default Credentials are used automatically. In CI, pass the file contents via `GOOGLE_CREDENTIALS`.
+
+{{ .SchemaMarkdown | trimspace }}
