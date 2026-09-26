@@ -44,14 +44,14 @@ func runTest(t *testing.T, tc resource.TestCase) {
 	tc.ProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
 		"googleappsscript": providerserver.NewProtocol6WithError(&googleAppsScriptProvider{version: "test", httpClient: httpClient}),
 	}
-	tc.CheckDestroy = checkProjectsTrashed(c)
+	tc.CheckDestroy = checkDriveFilesTrashed(c)
 	resource.UnitTest(t, tc)
 }
 
-func checkProjectsTrashed(c *client) resource.TestCheckFunc {
+func checkDriveFilesTrashed(c *client) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "googleappsscript_project" {
+			if rs.Type != "googleappsscript_project" && rs.Type != "googleappsscript_drive_file" {
 				continue
 			}
 			f, err := c.drive.Files.Get(rs.Primary.ID).Fields("trashed").SupportsAllDrives(true).Do()
@@ -62,7 +62,7 @@ func checkProjectsTrashed(c *client) resource.TestCheckFunc {
 				return err
 			}
 			if !f.Trashed {
-				return fmt.Errorf("project %s still exists", rs.Primary.ID)
+				return fmt.Errorf("%s %s still exists", rs.Type, rs.Primary.ID)
 			}
 		}
 		return nil

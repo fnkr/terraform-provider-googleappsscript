@@ -1,6 +1,6 @@
 # Terraform Provider for Google Apps Script
 
-Manage [Google Apps Script](https://developers.google.com/apps-script) projects, versions and deployments with Terraform.
+Manage [Google Apps Script](https://developers.google.com/apps-script) projects, versions and deployments with Terraform, including scripts bound to Google Docs, Sheets, Forms and Slides.
 
 ```hcl
 terraform {
@@ -42,7 +42,7 @@ See the [documentation](https://registry.terraform.io/providers/fnkr/googleappss
 
 - The Apps Script API must be turned on for the user at [script.google.com/home/usersettings](https://script.google.com/home/usersettings), otherwise every request fails with 403.
 - The Apps Script API does not support service accounts. Use user credentials that include the `drive` scope.
-- Destroying a standalone project moves it to the Drive trash. Container-bound projects and versions cannot be deleted via the API and are only removed from state.
+- Destroying a standalone project moves it to the Drive trash. Container-bound projects and versions cannot be deleted via the API and are only removed from state; bound projects are trashed along with their container.
 
 ## Development
 

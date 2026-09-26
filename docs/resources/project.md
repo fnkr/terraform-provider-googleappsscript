@@ -3,12 +3,12 @@
 page_title: "googleappsscript_project Resource - googleappsscript"
 subcategory: ""
 description: |-
-  An Apps Script project and its source files. Destroying a standalone project moves it to the Drive trash; container-bound projects are only removed from state.
+  An Apps Script project and its source files. Destroying a standalone project moves it to the Drive trash; container-bound projects are only removed from state and are trashed with their container.
 ---
 
 # googleappsscript_project (Resource)
 
-An Apps Script project and its source files. Destroying a standalone project moves it to the Drive trash; container-bound projects are only removed from state.
+An Apps Script project and its source files. Destroying a standalone project moves it to the Drive trash; container-bound projects are only removed from state and are trashed with their container.
 
 ## Example Usage
 
@@ -38,7 +38,7 @@ resource "googleappsscript_project" "example" {
 
 ### Optional
 
-- `parent_id` (String) Drive ID of a Google Doc, Sheet, Form or Slides file to bind the script to.
+- `parent_id` (String) Drive ID of a Google Doc, Sheet, Form or Slides file to bind the script to, e.g. from `googleappsscript_drive_file`.
 
 ### Read-Only
 

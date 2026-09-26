@@ -68,7 +68,8 @@ func (p *googleAppsScriptProvider) Metadata(_ context.Context, _ provider.Metada
 
 func (p *googleAppsScriptProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manage Google Apps Script projects, versions and deployments.",
+		Description: "Manage Google Apps Script projects, versions and deployments, " +
+			"including scripts bound to Google Docs, Sheets, Forms and Slides.",
 		Attributes: map[string]schema.Attribute{
 			"credentials": schema.StringAttribute{
 				Description: "Path to or contents of an `authorized_user` credentials JSON file. " +
@@ -121,6 +122,7 @@ func (p *googleAppsScriptProvider) Resources(_ context.Context) []func() resourc
 		newProjectResource,
 		newVersionResource,
 		newDeploymentResource,
+		newDriveFileResource,
 	}
 }
 

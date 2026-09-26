@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"sync"
 
+	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/script/v1"
 )
 
@@ -17,19 +18,19 @@ type fakeAPI struct {
 	mu       sync.Mutex
 	mux      *http.ServeMux
 	projects map[string]*fakeProject
+	files    map[string]*drive.File
 	nextID   int
 }
 
 type fakeProject struct {
 	script.Project
 	files       []*script.File
-	trashed     bool
 	versions    int64
 	deployments map[string]*script.Deployment
 }
 
 func newFakeAPI() *fakeAPI {
-	f := &fakeAPI{mux: http.NewServeMux(), projects: map[string]*fakeProject{}}
+	f := &fakeAPI{mux: http.NewServeMux(), projects: map[string]*fakeProject{}, files: map[string]*drive.File{}}
 
 	f.mux.HandleFunc("POST /v1/projects", func(w http.ResponseWriter, r *http.Request) {
 		var req script.CreateProjectRequest
@@ -39,6 +40,15 @@ func newFakeAPI() *fakeAPI {
 		p := &fakeProject{
 			Project:     script.Project{ScriptId: f.id("script"), Title: req.Title, ParentId: req.ParentId},
 			deployments: map[string]*script.Deployment{},
+		}
+		if req.ParentId != "" {
+			if _, ok := f.files[req.ParentId]; !ok {
+				replyError(w, http.StatusNotFound, "parent not found")
+				return
+			}
+		} else {
+			// Standalone projects are Drive files; bound projects are not.
+			f.files[p.ScriptId] = &drive.File{Id: p.ScriptId, Name: req.Title, MimeType: googleAppsMimeTypePrefix + "script"}
 		}
 		f.projects[p.ScriptId] = p
 		reply(w, p.Project)
@@ -95,22 +105,44 @@ func newFakeAPI() *fakeAPI {
 		}
 	})
 
+	f.mux.HandleFunc("POST /drive/v3/files", func(w http.ResponseWriter, r *http.Request) {
+		var file drive.File
+		if decode(w, r, &file) {
+			file.Id = f.id("file")
+			file.WebViewLink = "https://docs.google.com/fake/" + file.Id
+			f.files[file.Id] = &file
+			reply(w, file)
+		}
+	})
 	f.mux.HandleFunc("GET /drive/v3/files/{fileId}", func(w http.ResponseWriter, r *http.Request) {
-		if p := f.file(w, r); p != nil {
-			reply(w, map[string]any{"id": p.ScriptId, "name": p.Title, "trashed": p.trashed})
+		if file := f.file(w, r); file != nil {
+			reply(w, file)
 		}
 	})
 	f.mux.HandleFunc("PATCH /drive/v3/files/{fileId}", func(w http.ResponseWriter, r *http.Request) {
-		var req struct {
-			Name    string `json:"name"`
-			Trashed bool   `json:"trashed"`
-		}
-		if p := f.file(w, r); p != nil && decode(w, r, &req) {
-			if req.Name != "" {
-				p.Title = req.Name
+		var req drive.File
+		// Like the real API, Drive can rename bound projects but not read or trash them.
+		if p, ok := f.projects[r.PathValue("fileId")]; ok && p.ParentId != "" {
+			if !decode(w, r, &req) {
+				return
 			}
-			p.trashed = p.trashed || req.Trashed
-			reply(w, map[string]any{"id": p.ScriptId, "name": p.Title, "trashed": p.trashed})
+			if req.Trashed {
+				replyError(w, http.StatusBadRequest, "bad request")
+				return
+			}
+			p.Title = req.Name
+			reply(w, drive.File{Id: p.ScriptId, Name: p.Title})
+			return
+		}
+		if file := f.file(w, r); file != nil && decode(w, r, &req) {
+			if req.Name != "" {
+				file.Name = req.Name
+				if p, ok := f.projects[file.Id]; ok {
+					p.Title = req.Name
+				}
+			}
+			file.Trashed = file.Trashed || req.Trashed
+			reply(w, file)
 		}
 	})
 
@@ -152,15 +184,13 @@ func (f *fakeAPI) deployment(w http.ResponseWriter, r *http.Request) (*fakeProje
 	return p, d
 }
 
-// file returns a standalone project by Drive file ID. Container-bound projects
-// are not Drive files.
-func (f *fakeAPI) file(w http.ResponseWriter, r *http.Request) *fakeProject {
-	p, ok := f.projects[r.PathValue("fileId")]
-	if !ok || p.ParentId != "" {
+func (f *fakeAPI) file(w http.ResponseWriter, r *http.Request) *drive.File {
+	file, ok := f.files[r.PathValue("fileId")]
+	if !ok {
 		replyError(w, http.StatusNotFound, "file not found")
 		return nil
 	}
-	return p
+	return file
 }
 
 func (p *fakeProject) validVersion(w http.ResponseWriter, n int64) bool {

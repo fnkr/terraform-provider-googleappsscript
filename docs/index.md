@@ -1,12 +1,12 @@
 ---
 page_title: "Provider: Google Apps Script"
 description: |-
-  Manage Google Apps Script projects, versions and deployments.
+  Manage Google Apps Script projects, versions and deployments, including scripts bound to Google Docs, Sheets, Forms and Slides.
 ---
 
 # Google Apps Script Provider
 
-Manage Google Apps Script projects, versions and deployments.
+Manage Google Apps Script projects, versions and deployments, including scripts bound to Google Docs, Sheets, Forms and Slides.
 
 ## Example Usage
 

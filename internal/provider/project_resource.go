@@ -46,7 +46,7 @@ func (r *projectResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 	resp.Schema = schema.Schema{
 		Description: "An Apps Script project and its source files. " +
 			"Destroying a standalone project moves it to the Drive trash; " +
-			"container-bound projects are only removed from state.",
+			"container-bound projects are only removed from state and are trashed with their container.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description:   "Script ID.",
@@ -58,7 +58,8 @@ func (r *projectResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Required:    true,
 			},
 			"parent_id": schema.StringAttribute{
-				Description:   "Drive ID of a Google Doc, Sheet, Form or Slides file to bind the script to.",
+				Description: "Drive ID of a Google Doc, Sheet, Form or Slides file to bind the script to, " +
+					"e.g. from `googleappsscript_drive_file`.",
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
