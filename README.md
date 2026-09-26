@@ -38,6 +38,12 @@ resource "googleappsscript_deployment" "example" {
 
 See the [documentation](https://registry.terraform.io/providers/fnkr/googleappsscript/latest/docs) for authentication and all resources.
 
+## Pitfalls
+
+- The Apps Script API must be turned on for the user at [script.google.com/home/usersettings](https://script.google.com/home/usersettings), otherwise every request fails with 403.
+- The Apps Script API does not support service accounts. Use user credentials that include the `drive` scope.
+- Destroying a standalone project moves it to the Drive trash. Container-bound projects and versions cannot be deleted via the API and are only removed from state.
+
 ## Development
 
 Requires [Go](https://go.dev) and [Terraform](https://developer.hashicorp.com/terraform/install).
